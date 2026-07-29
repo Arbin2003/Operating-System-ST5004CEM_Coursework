@@ -1,32 +1,34 @@
-import threading
-import time
-
-counter = 0
-lock = threading.Lock()
+from worker import Worker
+from shared_resource import SharedCounter
+from scheduler import round_robin
 
 
-def worker(name):
-    global counter
+def main():
+    # Create one shared counter
+    shared_counter = SharedCounter()
 
-    for i in range(5):
-        with lock:
-            counter += 1
-            print(f"{name} increased counter to {counter}")
+    # Create three worker threads
+    worker1 = Worker("Worker-1", shared_counter)
+    worker2 = Worker("Worker-2", shared_counter)
+    worker3 = Worker("Worker-3", shared_counter)
 
-        time.sleep(1)
+    # Start the threads
+    worker1.start()
+    worker2.start()
+    worker3.start()
+
+    # Wait for all threads to finish
+    worker1.join()
+    worker2.join()
+    worker3.join()
+
+    print("\nAll threads have finished.")
+    print(f"Final Counter Value: {shared_counter.get_value()}")
+
+    # Round Robin Scheduler
+    processes = ["Process-1", "Process-2", "Process-3"]
+    round_robin(processes, 3)
 
 
-t1 = threading.Thread(target=worker, args=("Thread-1",))
-t2 = threading.Thread(target=worker, args=("Thread-2",))
-t3 = threading.Thread(target=worker, args=("Thread-3",))
-
-t1.start()
-t2.start()
-t3.start()
-
-t1.join()
-t2.join()
-t3.join()
-
-print("\nAll threads finished.")
-print("Final Counter:", counter)
+if __name__ == "__main__":
+    main()
