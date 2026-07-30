@@ -1,0 +1,9 @@
+[2026-07-30 13:05:05] User logged in successfully
+[2026-07-30 13:06:26] Created file: notes.txt
+[2026-07-30 13:07:31] User exited the program
+[2026-07-30 05:27:20] User logged in successfully
+[2026-07-30 05:27:36] Created file: softwarica.txt
+[2026-07-30 05:27:54] Wrote to file: softwarica.txt
+[2026-07-30 05:28:02] Read file: softwarica.txt
+[2026-07-30 05:28:12] Deleted file: softwarica.txt
+[2026-07-30 05:29:19] User exited the program
