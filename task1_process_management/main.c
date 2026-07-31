@@ -5,14 +5,17 @@
 #include "scheduler.h"
 
 #define NUM_THREADS 3
+#define ITERATIONS 100000
 
+/* Shared variables */
 int sharedCounter = 0;
-pthread_mutex_t mutex;
+int raceCounter = 0;
 
+pthread_mutex_t counterMutex;
 pthread_mutex_t lock1 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t lock2 = PTHREAD_MUTEX_INITIALIZER;
 
-/* ---------------- Thread Synchronization ---------------- */
+/* ---------------- Synchronization Example ---------------- */
 
 void *worker(void *arg)
 {
@@ -20,34 +23,43 @@ void *worker(void *arg)
 
     for (int i = 0; i < 5; i++)
     {
-        pthread_mutex_lock(&mutex);
+        pthread_mutex_lock(&counterMutex);
 
         sharedCounter++;
-        printf("Thread %d -> Counter = %d\n", id, sharedCounter);
+        printf("Thread %d updated counter to %d\n", id, sharedCounter);
 
-        pthread_mutex_unlock(&mutex);
+        pthread_mutex_unlock(&counterMutex);
 
-        sleep(1);
+        usleep(100000);
     }
 
-    pthread_exit(NULL);
+    return NULL;
 }
 
 /* ---------------- Race Condition ---------------- */
 
-void raceConditionDemo()
+void *raceWorker(void *arg)
 {
-    printf("\n=====================================\n");
-    printf("Race Condition Demonstration\n");
-    printf("=====================================\n");
+    for (int i = 0; i < ITERATIONS; i++)
+    {
+        raceCounter++;     // No mutex (intentional)
+    }
 
-    int counter = 0;
+    return NULL;
+}
 
-    for (int i = 0; i < 100000; i++)
-        counter++;
+/* ---------------- Mutex Protected ---------------- */
 
-    printf("Counter without synchronization example: %d\n", counter);
-    printf("Mutex is used in worker threads to avoid race conditions.\n");
+void *safeWorker(void *arg)
+{
+    for (int i = 0; i < ITERATIONS; i++)
+    {
+        pthread_mutex_lock(&counterMutex);
+        raceCounter++;
+        pthread_mutex_unlock(&counterMutex);
+    }
+
+    return NULL;
 }
 
 /* ---------------- Deadlock Prevention ---------------- */
@@ -65,11 +77,12 @@ void *taskA(void *arg)
     pthread_mutex_unlock(&lock2);
     pthread_mutex_unlock(&lock1);
 
-    pthread_exit(NULL);
+    return NULL;
 }
 
 void *taskB(void *arg)
 {
+    /* Same lock order prevents deadlock */
     pthread_mutex_lock(&lock1);
     printf("Task B acquired Lock 1\n");
 
@@ -81,23 +94,23 @@ void *taskB(void *arg)
     pthread_mutex_unlock(&lock2);
     pthread_mutex_unlock(&lock1);
 
-    pthread_exit(NULL);
+    return NULL;
 }
 
 /* ---------------- Main ---------------- */
 
 int main()
 {
-    printf("=====================================\n");
-    printf("Task 1 - Process Management\n");
-    printf("=====================================\n");
+    printf("=============================================\n");
+    printf("Task 1 - Process Management and Threading\n");
+    printf("=============================================\n");
+
+    pthread_mutex_init(&counterMutex, NULL);
 
     pthread_t threads[NUM_THREADS];
     int ids[NUM_THREADS] = {1, 2, 3};
 
-    pthread_mutex_init(&mutex, NULL);
-
-    printf("\nCreating Threads...\n\n");
+    printf("\n--- Thread Synchronization ---\n");
 
     for (int i = 0; i < NUM_THREADS; i++)
         pthread_create(&threads[i], NULL, worker, &ids[i]);
@@ -105,11 +118,44 @@ int main()
     for (int i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
 
-    printf("\nFinal Counter Value = %d\n", sharedCounter);
+    printf("\nFinal Shared Counter = %d\n", sharedCounter);
 
-    raceConditionDemo();
+    /* ---------------- Race Condition ---------------- */
 
-    Process processes[] = {
+    printf("\n--- Race Condition (Without Mutex) ---\n");
+
+    raceCounter = 0;
+
+    pthread_t r1, r2;
+
+    pthread_create(&r1, NULL, raceWorker, NULL);
+    pthread_create(&r2, NULL, raceWorker, NULL);
+
+    pthread_join(r1, NULL);
+    pthread_join(r2, NULL);
+
+    printf("Expected Counter : %d\n", ITERATIONS * 2);
+    printf("Actual Counter   : %d\n", raceCounter);
+
+    /* ---------------- Mutex Example ---------------- */
+
+    printf("\n--- Synchronization (With Mutex) ---\n");
+
+    raceCounter = 0;
+
+    pthread_create(&r1, NULL, safeWorker, NULL);
+    pthread_create(&r2, NULL, safeWorker, NULL);
+
+    pthread_join(r1, NULL);
+    pthread_join(r2, NULL);
+
+    printf("Expected Counter : %d\n", ITERATIONS * 2);
+    printf("Actual Counter   : %d\n", raceCounter);
+
+    /* ---------------- Round Robin ---------------- */
+
+    Process processes[] =
+    {
         {1, 8, 8},
         {2, 4, 4},
         {3, 9, 9},
@@ -118,21 +164,21 @@ int main()
 
     roundRobin(processes, 4, 2);
 
-    printf("\n=====================================\n");
-    printf("Deadlock Prevention Demo\n");
-    printf("=====================================\n");
+    /* ---------------- Deadlock Prevention ---------------- */
 
-    pthread_t t1, t2;
+    printf("\n--- Deadlock Prevention ---\n");
 
-    pthread_create(&t1, NULL, taskA, NULL);
-    pthread_create(&t2, NULL, taskB, NULL);
+    pthread_t d1, d2;
 
-    pthread_join(t1, NULL);
-    pthread_join(t2, NULL);
+    pthread_create(&d1, NULL, taskA, NULL);
+    pthread_create(&d2, NULL, taskB, NULL);
 
-    pthread_mutex_destroy(&mutex);
+    pthread_join(d1, NULL);
+    pthread_join(d2, NULL);
 
-    printf("\nProgram Finished Successfully.\n");
+    pthread_mutex_destroy(&counterMutex);
+
+    printf("\nProgram completed successfully.\n");
 
     return 0;
 }
