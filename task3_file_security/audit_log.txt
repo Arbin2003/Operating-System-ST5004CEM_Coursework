@@ -7,3 +7,11 @@
 [2026-07-30 05:28:02] Read file: softwarica.txt
 [2026-07-30 05:28:12] Deleted file: softwarica.txt
 [2026-07-30 05:29:19] User exited the program
+[Fri Jul 31 11:37:20 2026
+] CREATE : file.txt
+[Fri Jul 31 11:37:34 2026
+] READ : file.txt
+[Fri Jul 31 11:38:07 2026
+] WRITE : file.txt
+[Fri Jul 31 11:38:40 2026
+] DELETE : file.txt
