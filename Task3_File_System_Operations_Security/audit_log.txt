@@ -1,0 +1,10 @@
+[Fri Jul 31 18:56:20 2026
+] CREATE : softwarica.txt
+[Fri Jul 31 18:56:27 2026
+] READ : softwarica.txt
+[Fri Jul 31 18:56:40 2026
+] WRITE : softwarica.txt
+[Fri Jul 31 18:57:10 2026
+] ENCRYPT : softwarica.txt
+[Fri Jul 31 18:57:18 2026
+] DECRYPT : softwarica.txt
