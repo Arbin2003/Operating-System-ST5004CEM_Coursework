@@ -3,24 +3,51 @@
 
 int main()
 {
-    int pages[] = {7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2};
-    int n = sizeof(pages) / sizeof(pages[0]);
+    int pages[MAX_PAGES];
+    int frames, n;
 
-    printf("=========================================\n");
-    printf("Task 2 - Memory Management Simulation\n");
-    printf("=========================================\n");
+    printf("========================================\n");
+    printf("   Memory Management Simulation\n");
+    printf("========================================\n");
 
-    printf("\nPage Reference String:\n");
+    printf("\nEnter number of page frames (1-%d): ", MAX_FRAMES);
+    scanf("%d", &frames);
+
+    if (frames < 1 || frames > MAX_FRAMES)
+    {
+        printf("Invalid number of frames.\n");
+        return 1;
+    }
+
+    printf("Enter number of page references (1-%d): ", MAX_PAGES);
+    scanf("%d", &n);
+
+    if (n < 1 || n > MAX_PAGES)
+    {
+        printf("Invalid number of page references.\n");
+        return 1;
+    }
+
+    printf("Enter the page reference string:\n");
+
     for (int i = 0; i < n; i++)
-        printf("%d ", pages[i]);
+    {
+        scanf("%d", &pages[i]);
+    }
 
-    printf("\n");
+    printf("\n========================================\n");
+    printf("FIFO Page Replacement\n");
+    printf("========================================\n");
 
-    fifo(pages, n, MAX_FRAMES);
+    fifo(pages, n, frames);
 
-    lru(pages, n, MAX_FRAMES);
+    printf("\n========================================\n");
+    printf("LRU Page Replacement\n");
+    printf("========================================\n");
 
-    printf("\nSimulation Completed Successfully.\n");
+    lru(pages, n, frames);
+
+    printf("\nSimulation completed successfully.\n");
 
     return 0;
 }

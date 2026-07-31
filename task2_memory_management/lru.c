@@ -13,13 +13,14 @@ void lru(int pages[], int n, int frames)
         recent[i] = -1;
     }
 
-    printf("\n========== LRU Page Replacement ==========\n");
+    printf("\n%-8s %-20s %-10s\n", "Page", "Frames", "Status");
+    printf("-------------------------------------------------\n");
 
     for (int i = 0; i < n; i++)
     {
         int found = 0;
 
-        /* Check if page already exists */
+        /* Check if page is already in memory */
         for (int j = 0; j < frames; j++)
         {
             if (frame[j] == pages[i])
@@ -31,35 +32,39 @@ void lru(int pages[], int n, int frames)
             }
         }
 
-        /* Page Fault */
+        /* Page fault */
         if (!found)
         {
-            int replace = 0;
+            int replace = -1;
 
-            /* Find empty frame first */
+            /* Find an empty frame */
             for (int j = 0; j < frames; j++)
             {
                 if (frame[j] == -1)
                 {
                     replace = j;
-                    goto INSERT;
+                    break;
                 }
             }
 
-            /* Find Least Recently Used page */
-            for (int j = 1; j < frames; j++)
+            /* If no empty frame, replace the least recently used page */
+            if (replace == -1)
             {
-                if (recent[j] < recent[replace])
-                    replace = j;
+                replace = 0;
+
+                for (int j = 1; j < frames; j++)
+                {
+                    if (recent[j] < recent[replace])
+                        replace = j;
+                }
             }
 
-INSERT:
             frame[replace] = pages[i];
             recent[replace] = i;
             faults++;
         }
 
-        printf("Page %2d -> ", pages[i]);
+        printf("%-8d ", pages[i]);
 
         for (int j = 0; j < frames; j++)
         {
@@ -70,14 +75,17 @@ INSERT:
         }
 
         if (found)
-            printf("(Hit)\n");
+            printf("   Hit");
         else
-            printf("(Fault)\n");
+            printf("   Fault");
+
+        printf("\n");
     }
 
-    printf("\nLRU Statistics\n");
-    printf("Hits   : %d\n", hits);
-    printf("Faults : %d\n", faults);
-    printf("Hit Ratio   : %.2f\n", (float)hits / n);
-    printf("Fault Ratio : %.2f\n", (float)faults / n);
+    printf("\n--------------- LRU Statistics ----------------\n");
+    printf("Total Page References : %d\n", n);
+    printf("Page Hits             : %d\n", hits);
+    printf("Page Faults           : %d\n", faults);
+    printf("Hit Ratio             : %.2f\n", (float)hits / n);
+    printf("Fault Ratio           : %.2f\n", (float)faults / n);
 }

@@ -4,18 +4,20 @@
 void fifo(int pages[], int n, int frames)
 {
     int frame[MAX_FRAMES];
-    int front = 0;
+    int pointer = 0;
     int hits = 0, faults = 0;
 
     for (int i = 0; i < frames; i++)
         frame[i] = -1;
 
-    printf("\n========== FIFO Page Replacement ==========\n");
+    printf("\n%-8s %-20s %-10s\n", "Page", "Frames", "Status");
+    printf("-------------------------------------------------\n");
 
     for (int i = 0; i < n; i++)
     {
         int found = 0;
 
+        /* Check if page is already in memory */
         for (int j = 0; j < frames; j++)
         {
             if (frame[j] == pages[i])
@@ -26,14 +28,15 @@ void fifo(int pages[], int n, int frames)
             }
         }
 
+        /* Page fault */
         if (!found)
         {
-            frame[front] = pages[i];
-            front = (front + 1) % frames;
+            frame[pointer] = pages[i];
+            pointer = (pointer + 1) % frames;
             faults++;
         }
 
-        printf("Page %2d -> ", pages[i]);
+        printf("%-8d ", pages[i]);
 
         for (int j = 0; j < frames; j++)
         {
@@ -44,14 +47,17 @@ void fifo(int pages[], int n, int frames)
         }
 
         if (found)
-            printf("(Hit)\n");
+            printf("   Hit");
         else
-            printf("(Fault)\n");
+            printf("   Fault");
+
+        printf("\n");
     }
 
-    printf("\nFIFO Statistics\n");
-    printf("Hits   : %d\n", hits);
-    printf("Faults : %d\n", faults);
-    printf("Hit Ratio   : %.2f\n", (float)hits / n);
-    printf("Fault Ratio : %.2f\n", (float)faults / n);
+    printf("\n--------------- FIFO Statistics ---------------\n");
+    printf("Total Page References : %d\n", n);
+    printf("Page Hits             : %d\n", hits);
+    printf("Page Faults           : %d\n", faults);
+    printf("Hit Ratio             : %.2f\n", (float)hits / n);
+    printf("Fault Ratio           : %.2f\n", (float)faults / n);
 }
